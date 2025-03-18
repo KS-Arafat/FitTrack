@@ -17,7 +17,10 @@ $phash = $row["hash"];
 
 if (password_verify($pwd, $phash)) {
     session_start();
+<<<<<<< HEAD
     $_SESSION["uuid"] = $row["uuid"];
+=======
+>>>>>>> db405d091c8225fb65b6f28dc47bb1f687588cfb
     $_SESSION["username"] = $row["username"];
     header("Location: ../dashboard.php");
     exit();
