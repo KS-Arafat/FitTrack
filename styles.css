@@ -887,3 +887,7 @@ nav {
 .ri-close-line:before {
 	content: "\eb99";
 }
+
+.hidden {
+	display: none;
+}
