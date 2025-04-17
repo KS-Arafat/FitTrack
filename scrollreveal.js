@@ -1,13 +1,12 @@
-(function (global, factory) {
-	typeof exports === "object" && typeof module !== "undefined"
-		? (module.exports = factory())
-		: typeof define === "function" && define.amd
-		? define(factory)
-		: ((global = global || self), (global.ScrollReveal = factory()));
+!(function (e, t) {
+	"object" == typeof exports && "undefined" != typeof module
+		? (module.exports = t())
+		: "function" == typeof define && define.amd
+		? define(t)
+		: ((e = e || self).ScrollReveal = t());
 })(this, function () {
 	"use strict";
-
-	var defaults = {
+	var e = {
 		delay: 0,
 		distance: "0",
 		duration: 600,
@@ -15,1274 +14,819 @@
 		interval: 0,
 		opacity: 0,
 		origin: "bottom",
-		rotate: {
-			x: 0,
-			y: 0,
-			z: 0,
-		},
+		rotate: { x: 0, y: 0, z: 0 },
 		scale: 1,
-		cleanup: false,
+		cleanup: !1,
 		container: document.documentElement,
-		desktop: true,
-		mobile: true,
-		reset: false,
+		desktop: !0,
+		mobile: !0,
+		reset: !1,
 		useDelay: "always",
-		viewFactor: 0.0,
-		viewOffset: {
-			top: 0,
-			right: 0,
-			bottom: 0,
-			left: 0,
-		},
-		afterReset: function afterReset() {},
-		afterReveal: function afterReveal() {},
-		beforeReset: function beforeReset() {},
-		beforeReveal: function beforeReveal() {},
+		viewFactor: 0,
+		viewOffset: { top: 0, right: 0, bottom: 0, left: 0 },
+		afterReset: function () {},
+		afterReveal: function () {},
+		beforeReset: function () {},
+		beforeReveal: function () {},
 	};
-
-	function failure() {
-		document.documentElement.classList.remove("sr");
-
-		return {
-			reveal: function reveal() {},
-		};
+	var t = {
+		success: function () {
+			document.documentElement.classList.add("sr"),
+				document.body
+					? (document.body.style.height = "100%")
+					: document.addEventListener("DOMContentLoaded", function () {
+							document.body.style.height = "100%";
+					  });
+		},
+		failure: function () {
+			return (
+				document.documentElement.classList.remove("sr"),
+				{ reveal: function () {} }
+			);
+		},
+	};
+	function n(e) {
+		return "object" == typeof window.Node
+			? e instanceof window.Node
+			: null !== e &&
+					"object" == typeof e &&
+					"number" == typeof e.nodeType &&
+					"string" == typeof e.nodeName;
 	}
-
-	function success() {
-		document.documentElement.classList.add("sr");
-
-		if (document.body) {
-			document.body.style.height = "100%";
-		} else {
-			document.addEventListener("DOMContentLoaded", function () {
-				document.body.style.height = "100%";
-			});
-		}
-	}
-
-	var mount = { success: success, failure: failure };
-
-	function isDomNode(x) {
-		return typeof window.Node === "object"
-			? x instanceof window.Node
-			: x !== null &&
-					typeof x === "object" &&
-					typeof x.nodeType === "number" &&
-					typeof x.nodeName === "string";
-	}
-
-	function isDomNodeList(x) {
-		var prototypeToString = Object.prototype.toString.call(x);
-		var regex = /^\[object (HTMLCollection|NodeList|Object)\]$/;
-
-		return typeof window.NodeList === "object"
-			? x instanceof window.NodeList
-			: x !== null &&
-					typeof x === "object" &&
-					typeof x.length === "number" &&
-					regex.test(prototypeToString) &&
-					(x.length === 0 || isDomNode(x[0]));
-	}
-
-	function tealight(target, context) {
-		if (context === void 0) {
-			context = document;
-		}
-
-		if (target instanceof Array) {
-			return target.filter(isDomNode);
-		}
-		if (isDomNode(target)) {
-			return [target];
-		}
-		if (isDomNodeList(target)) {
-			return Array.prototype.slice.call(target);
-		}
-		if (typeof target === "string") {
+	function i(e, t) {
+		if ((void 0 === t && (t = document), e instanceof Array))
+			return e.filter(n);
+		if (n(e)) return [e];
+		if (
+			((i = e),
+			(r = Object.prototype.toString.call(i)),
+			"object" == typeof window.NodeList
+				? i instanceof window.NodeList
+				: null !== i &&
+				  "object" == typeof i &&
+				  "number" == typeof i.length &&
+				  /^\[object (HTMLCollection|NodeList|Object)\]$/.test(r) &&
+				  (0 === i.length || n(i[0])))
+		)
+			return Array.prototype.slice.call(e);
+		var i, r;
+		if ("string" == typeof e)
 			try {
-				var query = context.querySelectorAll(target);
-				return Array.prototype.slice.call(query);
-			} catch (err) {
+				var o = t.querySelectorAll(e);
+				return Array.prototype.slice.call(o);
+			} catch (e) {
 				return [];
 			}
-		}
 		return [];
 	}
-
-	function isObject(x) {
+	function r(e) {
 		return (
-			x !== null &&
-			x instanceof Object &&
-			(x.constructor === Object ||
-				Object.prototype.toString.call(x) === "[object Object]")
+			null !== e &&
+			e instanceof Object &&
+			(e.constructor === Object ||
+				"[object Object]" === Object.prototype.toString.call(e))
 		);
 	}
-
-	function each(collection, callback) {
-		if (isObject(collection)) {
-			var keys = Object.keys(collection);
-			return keys.forEach(function (key) {
-				return callback(collection[key], key, collection);
+	function o(e, t) {
+		if (r(e))
+			return Object.keys(e).forEach(function (n) {
+				return t(e[n], n, e);
 			});
-		}
-		if (collection instanceof Array) {
-			return collection.forEach(function (item, i) {
-				return callback(item, i, collection);
+		if (e instanceof Array)
+			return e.forEach(function (n, i) {
+				return t(n, i, e);
 			});
-		}
 		throw new TypeError("Expected either an array or object literal.");
 	}
-
-	function logger(message) {
-		var details = [],
-			len = arguments.length - 1;
-		while (len-- > 0) details[len] = arguments[len + 1];
-
+	function a(e) {
+		for (var t = [], n = arguments.length - 1; n-- > 0; )
+			t[n] = arguments[n + 1];
 		if (this.constructor.debug && console) {
-			var report = "%cScrollReveal: " + message;
-			details.forEach(function (detail) {
-				return (report += "\n — " + detail);
-			});
-			console.log(report, "color: #ea654b;");
+			var i = "%cScrollReveal: " + e;
+			t.forEach(function (e) {
+				return (i += "\n — " + e);
+			}),
+				console.log(i, "color: #ea654b;");
 		}
 	}
-
-	function rinse() {
-		var this$1 = this;
-
-		var struct = function () {
-			return {
-				active: [],
-				stale: [],
-			};
-		};
-
-		var elementIds = struct();
-		var sequenceIds = struct();
-		var containerIds = struct();
-
+	function s() {
+		var e = this,
+			t = { active: [], stale: [] },
+			n = { active: [], stale: [] },
+			r = { active: [], stale: [] };
 		try {
-			each(tealight("[data-sr-id]"), function (node) {
-				var id = parseInt(node.getAttribute("data-sr-id"));
-				elementIds.active.push(id);
+			o(i("[data-sr-id]"), function (e) {
+				var n = parseInt(e.getAttribute("data-sr-id"));
+				t.active.push(n);
 			});
 		} catch (e) {
 			throw e;
 		}
-
-		each(this.store.elements, function (element) {
-			if (elementIds.active.indexOf(element.id) === -1) {
-				elementIds.stale.push(element.id);
-			}
-		});
-
-		each(elementIds.stale, function (staleId) {
-			return delete this$1.store.elements[staleId];
-		});
-
-		each(this.store.elements, function (element) {
-			if (containerIds.active.indexOf(element.containerId) === -1) {
-				containerIds.active.push(element.containerId);
-			}
-			if (element.hasOwnProperty("sequence")) {
-				if (sequenceIds.active.indexOf(element.sequence.id) === -1) {
-					sequenceIds.active.push(element.sequence.id);
-				}
-			}
-		});
-
-		each(this.store.containers, function (container) {
-			if (containerIds.active.indexOf(container.id) === -1) {
-				containerIds.stale.push(container.id);
-			}
-		});
-
-		each(containerIds.stale, function (staleId) {
-			var stale = this$1.store.containers[staleId].node;
-			stale.removeEventListener("scroll", this$1.delegate);
-			stale.removeEventListener("resize", this$1.delegate);
-			delete this$1.store.containers[staleId];
-		});
-
-		each(this.store.sequences, function (sequence) {
-			if (sequenceIds.active.indexOf(sequence.id) === -1) {
-				sequenceIds.stale.push(sequence.id);
-			}
-		});
-
-		each(sequenceIds.stale, function (staleId) {
-			return delete this$1.store.sequences[staleId];
-		});
+		o(this.store.elements, function (e) {
+			-1 === t.active.indexOf(e.id) && t.stale.push(e.id);
+		}),
+			o(t.stale, function (t) {
+				return delete e.store.elements[t];
+			}),
+			o(this.store.elements, function (e) {
+				-1 === r.active.indexOf(e.containerId) && r.active.push(e.containerId),
+					e.hasOwnProperty("sequence") &&
+						-1 === n.active.indexOf(e.sequence.id) &&
+						n.active.push(e.sequence.id);
+			}),
+			o(this.store.containers, function (e) {
+				-1 === r.active.indexOf(e.id) && r.stale.push(e.id);
+			}),
+			o(r.stale, function (t) {
+				var n = e.store.containers[t].node;
+				n.removeEventListener("scroll", e.delegate),
+					n.removeEventListener("resize", e.delegate),
+					delete e.store.containers[t];
+			}),
+			o(this.store.sequences, function (e) {
+				-1 === n.active.indexOf(e.id) && n.stale.push(e.id);
+			}),
+			o(n.stale, function (t) {
+				return delete e.store.sequences[t];
+			});
 	}
-
-	function format(source) {
-		if (source.constructor !== Array) {
-			throw new TypeError("Expected array.");
-		}
-		if (source.length === 16) {
-			return source;
-		}
-		if (source.length === 6) {
-			var matrix = identity();
-			matrix[0] = source[0];
-			matrix[1] = source[1];
-			matrix[4] = source[2];
-			matrix[5] = source[3];
-			matrix[12] = source[4];
-			matrix[13] = source[5];
-			return matrix;
+	function c(e) {
+		if (e.constructor !== Array) throw new TypeError("Expected array.");
+		if (16 === e.length) return e;
+		if (6 === e.length) {
+			var t = l();
+			return (
+				(t[0] = e[0]),
+				(t[1] = e[1]),
+				(t[4] = e[2]),
+				(t[5] = e[3]),
+				(t[12] = e[4]),
+				(t[13] = e[5]),
+				t
+			);
 		}
 		throw new RangeError("Expected array with either 6 or 16 values.");
 	}
-
-	function identity() {
-		var matrix = [];
-		for (var i = 0; i < 16; i++) {
-			i % 5 == 0 ? matrix.push(1) : matrix.push(0);
-		}
-		return matrix;
+	function l() {
+		for (var e = [], t = 0; t < 16; t++) t % 5 == 0 ? e.push(1) : e.push(0);
+		return e;
 	}
-
-	function multiply(m, x) {
-		var fm = format(m);
-		var fx = format(x);
-		var product = [];
-
-		for (var i = 0; i < 4; i++) {
-			var row = [fm[i], fm[i + 4], fm[i + 8], fm[i + 12]];
-			for (var j = 0; j < 4; j++) {
-				var k = j * 4;
-				var col = [fx[k], fx[k + 1], fx[k + 2], fx[k + 3]];
-				var result =
-					row[0] * col[0] + row[1] * col[1] + row[2] * col[2] + row[3] * col[3];
-
-				product[i + k] = result;
+	function u(e, t) {
+		for (var n = c(e), i = c(t), r = [], o = 0; o < 4; o++)
+			for (var a = [n[o], n[o + 4], n[o + 8], n[o + 12]], s = 0; s < 4; s++) {
+				var l = 4 * s,
+					u = [i[l], i[l + 1], i[l + 2], i[l + 3]],
+					d = a[0] * u[0] + a[1] * u[1] + a[2] * u[2] + a[3] * u[3];
+				r[o + l] = d;
 			}
+		return r;
+	}
+	function d(e) {
+		if ("string" == typeof e) {
+			var t = e.match(/matrix(3d)?\(([^)]+)\)/);
+			if (t) return c(t[2].split(", ").map(parseFloat));
 		}
-
-		return product;
+		return l();
 	}
-
-	function parse(source) {
-		if (typeof source === "string") {
-			var match = source.match(/matrix(3d)?\(([^)]+)\)/);
-			if (match) {
-				var raw = match[2].split(", ").map(parseFloat);
-				return format(raw);
-			}
-		}
-		return identity();
+	function f(e, t) {
+		var n = l();
+		return (n[0] = e), (n[5] = "number" == typeof t ? t : e), n;
 	}
-
-	function rotateX(angle) {
-		var theta = (Math.PI / 180) * angle;
-		var matrix = identity();
-
-		matrix[5] = matrix[10] = Math.cos(theta);
-		matrix[6] = matrix[9] = Math.sin(theta);
-		matrix[9] *= -1;
-
-		return matrix;
-	}
-
-	function rotateY(angle) {
-		var theta = (Math.PI / 180) * angle;
-		var matrix = identity();
-
-		matrix[0] = matrix[10] = Math.cos(theta);
-		matrix[2] = matrix[8] = Math.sin(theta);
-		matrix[2] *= -1;
-
-		return matrix;
-	}
-
-	function rotateZ(angle) {
-		var theta = (Math.PI / 180) * angle;
-		var matrix = identity();
-
-		matrix[0] = matrix[5] = Math.cos(theta);
-		matrix[1] = matrix[4] = Math.sin(theta);
-		matrix[4] *= -1;
-
-		return matrix;
-	}
-
-	function scale(scalar, scalarY) {
-		var matrix = identity();
-
-		matrix[0] = scalar;
-		matrix[5] = typeof scalarY === "number" ? scalarY : scalar;
-
-		return matrix;
-	}
-
-	function translateX(distance) {
-		var matrix = identity();
-		matrix[12] = distance;
-		return matrix;
-	}
-
-	function translateY(distance) {
-		var matrix = identity();
-		matrix[13] = distance;
-		return matrix;
-	}
-
-	var getPrefixedCssProp = (function () {
-		var properties = {};
-		var style = document.documentElement.style;
-
-		function getPrefixedCssProperty(name, source) {
-			if (source === void 0) source = style;
-
-			if (name && typeof name === "string") {
-				if (properties[name]) {
-					return properties[name];
-				}
-				if (typeof source[name] === "string") {
-					return (properties[name] = name);
-				}
-				if (typeof source["-webkit-" + name] === "string") {
-					return (properties[name] = "-webkit-" + name);
-				}
-				throw new RangeError('Unable to find "' + name + '" style property.');
+	var h = (function () {
+		var e = {},
+			t = document.documentElement.style;
+		function n(n, i) {
+			if ((void 0 === i && (i = t), n && "string" == typeof n)) {
+				if (e[n]) return e[n];
+				if ("string" == typeof i[n]) return (e[n] = n);
+				if ("string" == typeof i["-webkit-" + n])
+					return (e[n] = "-webkit-" + n);
+				throw new RangeError('Unable to find "' + n + '" style property.');
 			}
 			throw new TypeError("Expected a string.");
 		}
-
-		getPrefixedCssProperty.clearCache = function () {
-			return (properties = {});
-		};
-
-		return getPrefixedCssProperty;
+		return (
+			(n.clearCache = function () {
+				return (e = {});
+			}),
+			n
+		);
 	})();
-
-	function style(element) {
-		var computed = window.getComputedStyle(element.node);
-		var position = computed.position;
-		var config = element.config;
-
-		var inline = {};
-		var inlineStyle = element.node.getAttribute("style") || "";
-		var inlineMatch = inlineStyle.match(/[\w-]+\s*:\s*[^;]+\s*/gi) || [];
-
-		inline.computed = inlineMatch
-			? inlineMatch
-					.map(function (m) {
-						return m.trim();
+	function p(e) {
+		var t = window.getComputedStyle(e.node),
+			n = t.position,
+			i = e.config,
+			r = {},
+			o =
+				(e.node.getAttribute("style") || "").match(/[\w-]+\s*:\s*[^;]+\s*/gi) ||
+				[];
+		(r.computed = o
+			? o
+					.map(function (e) {
+						return e.trim();
 					})
 					.join("; ") + ";"
-			: "";
-
-		inline.generated = inlineMatch.some(function (m) {
-			return m.match(/visibility\s?:\s?visible/i);
-		})
-			? inline.computed
-			: inlineMatch
-					.concat(["visibility: visible"])
-					.map(function (m) {
-						return m.trim();
-					})
-					.join("; ") + ";";
-
-		var computedOpacity = parseFloat(computed.opacity);
-		var configOpacity = !isNaN(parseFloat(config.opacity))
-			? parseFloat(config.opacity)
-			: parseFloat(computed.opacity);
-
-		var opacity = {
-			computed:
-				computedOpacity !== configOpacity
-					? "opacity: " + computedOpacity + ";"
-					: "",
-			generated:
-				computedOpacity !== configOpacity
-					? "opacity: " + configOpacity + ";"
-					: "",
-		};
-
-		var transformations = [];
-
-		if (parseFloat(config.distance)) {
-			var axis =
-				config.origin === "top" || config.origin === "bottom" ? "Y" : "X";
-
-			var distance = config.distance;
-			if (config.origin === "top" || config.origin === "left") {
-				distance = /^-/.test(distance) ? distance.substr(1) : "-" + distance;
-			}
-
-			var ref = distance.match(/(^-?\d+\.?\d?)|(em$|px$|%$)/g);
-			var value = ref[0];
-			var unit = ref[1];
-
-			switch (unit) {
+			: ""),
+			(r.generated = o.some(function (e) {
+				return e.match(/visibility\s?:\s?visible/i);
+			})
+				? r.computed
+				: o
+						.concat(["visibility: visible"])
+						.map(function (e) {
+							return e.trim();
+						})
+						.join("; ") + ";");
+		var a,
+			s,
+			c,
+			p = parseFloat(t.opacity),
+			m = isNaN(parseFloat(i.opacity))
+				? parseFloat(t.opacity)
+				: parseFloat(i.opacity),
+			v = {
+				computed: p !== m ? "opacity: " + p + ";" : "",
+				generated: p !== m ? "opacity: " + m + ";" : "",
+			},
+			y = [];
+		if (parseFloat(i.distance)) {
+			var g = "top" === i.origin || "bottom" === i.origin ? "Y" : "X",
+				b = i.distance;
+			("top" !== i.origin && "left" !== i.origin) ||
+				(b = /^-/.test(b) ? b.substr(1) : "-" + b);
+			var w = b.match(/(^-?\d+\.?\d?)|(em$|px$|%$)/g),
+				E = w[0];
+			switch (w[1]) {
 				case "em":
-					distance = parseInt(computed.fontSize) * value;
+					b = parseInt(t.fontSize) * E;
 					break;
 				case "px":
-					distance = value;
+					b = E;
 					break;
 				case "%":
-					distance =
-						axis === "Y"
-							? (element.node.getBoundingClientRect().height * value) / 100
-							: (element.node.getBoundingClientRect().width * value) / 100;
+					b =
+						"Y" === g
+							? (e.node.getBoundingClientRect().height * E) / 100
+							: (e.node.getBoundingClientRect().width * E) / 100;
 					break;
 				default:
 					throw new RangeError("Unrecognized or missing distance unit.");
 			}
-
-			if (axis === "Y") {
-				transformations.push(translateY(distance));
-			} else {
-				transformations.push(translateX(distance));
-			}
+			"Y" === g
+				? y.push(
+						(function (e) {
+							var t = l();
+							return (t[13] = e), t;
+						})(b)
+				  )
+				: y.push(
+						(function (e) {
+							var t = l();
+							return (t[12] = e), t;
+						})(b)
+				  );
 		}
-
-		if (config.rotate.x) {
-			transformations.push(rotateX(config.rotate.x));
-		}
-		if (config.rotate.y) {
-			transformations.push(rotateY(config.rotate.y));
-		}
-		if (config.rotate.z) {
-			transformations.push(rotateZ(config.rotate.z));
-		}
-		if (config.scale !== 1) {
-			if (config.scale === 0) {
-				transformations.push(scale(0.0002));
-			} else {
-				transformations.push(scale(config.scale));
-			}
-		}
-
-		var transform = {};
-		if (transformations.length) {
-			transform.property = getPrefixedCssProp("transform");
-
-			transform.computed = {
-				raw: computed[transform.property],
-				matrix: parse(computed[transform.property]),
+		i.rotate.x &&
+			y.push(
+				((a = i.rotate.x),
+				(s = (Math.PI / 180) * a),
+				((c = l())[5] = c[10] = Math.cos(s)),
+				(c[6] = c[9] = Math.sin(s)),
+				(c[9] *= -1),
+				c)
+			),
+			i.rotate.y &&
+				y.push(
+					(function (e) {
+						var t = (Math.PI / 180) * e,
+							n = l();
+						return (
+							(n[0] = n[10] = Math.cos(t)),
+							(n[2] = n[8] = Math.sin(t)),
+							(n[2] *= -1),
+							n
+						);
+					})(i.rotate.y)
+				),
+			i.rotate.z &&
+				y.push(
+					(function (e) {
+						var t = (Math.PI / 180) * e,
+							n = l();
+						return (
+							(n[0] = n[5] = Math.cos(t)),
+							(n[1] = n[4] = Math.sin(t)),
+							(n[4] *= -1),
+							n
+						);
+					})(i.rotate.z)
+				),
+			1 !== i.scale && (0 === i.scale ? y.push(f(2e-4)) : y.push(f(i.scale)));
+		var j = {};
+		if (y.length) {
+			(j.property = h("transform")),
+				(j.computed = { raw: t[j.property], matrix: d(t[j.property]) }),
+				y.unshift(j.computed.matrix);
+			var T = y.reduce(u);
+			j.generated = {
+				initial: j.property + ": matrix3d(" + T.join(", ") + ");",
+				final: j.property + ": matrix3d(" + j.computed.matrix.join(", ") + ");",
 			};
-
-			transformations.unshift(transform.computed.matrix);
-			var product = transformations.reduce(multiply);
-
-			transform.generated = {
-				initial: transform.property + ": matrix3d(" + product.join(", ") + ");",
-				final:
-					transform.property +
-					": matrix3d(" +
-					transform.computed.matrix.join(", ") +
-					");",
-			};
-		} else {
-			transform.generated = {
-				initial: "",
-				final: "",
-			};
-		}
-
-		var transition = {};
-		if (opacity.generated || transform.generated.initial) {
-			transition.property = getPrefixedCssProp("transition");
-			transition.computed = computed[transition.property];
-			transition.fragments = [];
-
-			var delay = config.delay;
-			var duration = config.duration;
-			var easing = config.easing;
-
-			if (opacity.generated) {
-				transition.fragments.push({
-					delayed:
-						"opacity " +
-						duration / 1000 +
-						"s " +
-						easing +
-						" " +
-						delay / 1000 +
-						"s",
-					instant: "opacity " + duration / 1000 + "s " + easing + " 0s",
-				});
-			}
-
-			if (transform.generated.initial) {
-				transition.fragments.push({
-					delayed:
-						transform.property +
-						" " +
-						duration / 1000 +
-						"s " +
-						easing +
-						" " +
-						delay / 1000 +
-						"s",
-					instant:
-						transform.property + " " + duration / 1000 + "s " + easing + " 0s",
-				});
-			}
-
-			var hasCustomTransition =
-				transition.computed && !transition.computed.match(/all 0s|none 0s/);
-
-			if (hasCustomTransition) {
-				transition.fragments.unshift({
-					delayed: transition.computed,
-					instant: transition.computed,
-				});
-			}
-
-			var composed = transition.fragments.reduce(
-				function (composition, fragment, i) {
-					composition.delayed +=
-						i === 0 ? fragment.delayed : ", " + fragment.delayed;
-					composition.instant +=
-						i === 0 ? fragment.instant : ", " + fragment.instant;
-					return composition;
+		} else j.generated = { initial: "", final: "" };
+		var x = {};
+		if (v.generated || j.generated.initial) {
+			(x.property = h("transition")),
+				(x.computed = t[x.property]),
+				(x.fragments = []);
+			var k = i.delay,
+				O = i.duration,
+				R = i.easing;
+			v.generated &&
+				x.fragments.push({
+					delayed: "opacity " + O / 1e3 + "s " + R + " " + k / 1e3 + "s",
+					instant: "opacity " + O / 1e3 + "s " + R + " 0s",
+				}),
+				j.generated.initial &&
+					x.fragments.push({
+						delayed:
+							j.property + " " + O / 1e3 + "s " + R + " " + k / 1e3 + "s",
+						instant: j.property + " " + O / 1e3 + "s " + R + " 0s",
+					}),
+				x.computed &&
+					!x.computed.match(/all 0s|none 0s/) &&
+					x.fragments.unshift({ delayed: x.computed, instant: x.computed });
+			var q = x.fragments.reduce(
+				function (e, t, n) {
+					return (
+						(e.delayed += 0 === n ? t.delayed : ", " + t.delayed),
+						(e.instant += 0 === n ? t.instant : ", " + t.instant),
+						e
+					);
 				},
-				{
-					delayed: "",
-					instant: "",
-				}
+				{ delayed: "", instant: "" }
 			);
-
-			transition.generated = {
-				delayed: transition.property + ": " + composed.delayed + ";",
-				instant: transition.property + ": " + composed.instant + ";",
+			x.generated = {
+				delayed: x.property + ": " + q.delayed + ";",
+				instant: x.property + ": " + q.instant + ";",
 			};
-		} else {
-			transition.generated = {
-				delayed: "",
-				instant: "",
-			};
-		}
-
-		return {
-			inline: inline,
-			opacity: opacity,
-			position: position,
-			transform: transform,
-			transition: transition,
-		};
+		} else x.generated = { delayed: "", instant: "" };
+		return { inline: r, opacity: v, position: n, transform: j, transition: x };
 	}
-
-	function applyStyle(el, declaration) {
-		declaration.split(";").forEach(function (pair) {
-			var ref = pair.split(":");
-			var property = ref[0];
-			var value = ref.slice(1);
-			if (property && value) {
-				el.style[property.trim()] = value.join(":");
-			}
+	function m(e, t) {
+		t.split(";").forEach(function (t) {
+			var n = t.split(":"),
+				i = n[0],
+				r = n.slice(1);
+			i && r && (e.style[i.trim()] = r.join(":"));
 		});
 	}
-
-	function deepAssign(target) {
-		var sources = [],
-			len = arguments.length - 1;
-		while (len-- > 0) sources[len] = arguments[len + 1];
-
-		if (isObject(target)) {
-			each(sources, function (source) {
-				each(source, function (data, key) {
-					if (isObject(data)) {
-						if (!target[key] || !isObject(target[key])) {
-							target[key] = {};
-						}
-						deepAssign(target[key], data);
-					} else {
-						target[key] = data;
-					}
-				});
+	function v(e) {
+		for (var t = [], n = arguments.length - 1; n-- > 0; )
+			t[n] = arguments[n + 1];
+		if (r(e))
+			return (
+				o(t, function (t) {
+					o(t, function (t, n) {
+						r(t) ? ((e[n] && r(e[n])) || (e[n] = {}), v(e[n], t)) : (e[n] = t);
+					});
+				}),
+				e
+			);
+		throw new TypeError("Target must be an object literal.");
+	}
+	function y(e) {
+		return (
+			void 0 === e && (e = navigator.userAgent),
+			/Android|iPhone|iPad|iPod/i.test(e)
+		);
+	}
+	var g,
+		b =
+			((g = 0),
+			function () {
+				return g++;
 			});
-			return target;
-		} else {
-			throw new TypeError("Target must be an object literal.");
-		}
+	function w() {
+		var e = this;
+		s.call(this),
+			o(this.store.elements, function (e) {
+				var t = [e.styles.inline.generated];
+				e.visible
+					? (t.push(e.styles.opacity.computed),
+					  t.push(e.styles.transform.generated.final),
+					  (e.revealed = !0))
+					: (t.push(e.styles.opacity.generated),
+					  t.push(e.styles.transform.generated.initial),
+					  (e.revealed = !1)),
+					m(
+						e.node,
+						t
+							.filter(function (e) {
+								return "" !== e;
+							})
+							.join(" ")
+					);
+			}),
+			o(this.store.containers, function (t) {
+				var n = t.node === document.documentElement ? window : t.node;
+				n.addEventListener("scroll", e.delegate),
+					n.addEventListener("resize", e.delegate);
+			}),
+			this.delegate(),
+			(this.initTimeout = null);
 	}
-
-	function isMobile(agent) {
-		if (agent === void 0) agent = navigator.userAgent;
-
-		return /Android|iPhone|iPad|iPod/i.test(agent);
+	function E(e, t) {
+		void 0 === t && (t = {});
+		var n = t.pristine || this.pristine,
+			i =
+				"always" === e.config.useDelay ||
+				("onload" === e.config.useDelay && n) ||
+				("once" === e.config.useDelay && !e.seen),
+			r = e.visible && !e.revealed,
+			o = !e.visible && e.revealed && e.config.reset;
+		return t.reveal || r
+			? j.call(this, e, i)
+			: t.reset || o
+			? T.call(this, e)
+			: void 0;
 	}
-
-	var nextUniqueId = (function () {
-		var uid = 0;
-		return function () {
-			return uid++;
-		};
-	})();
-
-	function initialize() {
-		var this$1 = this;
-
-		rinse.call(this);
-
-		each(this.store.elements, function (element) {
-			var styles = [element.styles.inline.generated];
-
-			if (element.visible) {
-				styles.push(element.styles.opacity.computed);
-				styles.push(element.styles.transform.generated.final);
-				element.revealed = true;
-			} else {
-				styles.push(element.styles.opacity.generated);
-				styles.push(element.styles.transform.generated.initial);
-				element.revealed = false;
-			}
-
-			applyStyle(
-				element.node,
-				styles
-					.filter(function (s) {
-						return s !== "";
+	function j(e, t) {
+		var n = [
+			e.styles.inline.generated,
+			e.styles.opacity.computed,
+			e.styles.transform.generated.final,
+		];
+		t
+			? n.push(e.styles.transition.generated.delayed)
+			: n.push(e.styles.transition.generated.instant),
+			(e.revealed = e.seen = !0),
+			m(
+				e.node,
+				n
+					.filter(function (e) {
+						return "" !== e;
 					})
 					.join(" ")
-			);
-		});
-
-		each(this.store.containers, function (container) {
-			var target =
-				container.node === document.documentElement ? window : container.node;
-			target.addEventListener("scroll", this$1.delegate);
-			target.addEventListener("resize", this$1.delegate);
-		});
-
-		this.delegate();
-
-		this.initTimeout = null;
+			),
+			x.call(this, e, t);
 	}
-
-	function animate(element, force) {
-		if (force === void 0) force = {};
-
-		var pristine = force.pristine || this.pristine;
-		var delayed =
-			element.config.useDelay === "always" ||
-			(element.config.useDelay === "onload" && pristine) ||
-			(element.config.useDelay === "once" && !element.seen);
-
-		var shouldReveal = element.visible && !element.revealed;
-		var shouldReset =
-			!element.visible && element.revealed && element.config.reset;
-
-		if (force.reveal || shouldReveal) {
-			return triggerReveal.call(this, element, delayed);
-		}
-
-		if (force.reset || shouldReset) {
-			return triggerReset.call(this, element);
-		}
-	}
-
-	function triggerReveal(element, delayed) {
-		var styles = [
-			element.styles.inline.generated,
-			element.styles.opacity.computed,
-			element.styles.transform.generated.final,
+	function T(e) {
+		var t = [
+			e.styles.inline.generated,
+			e.styles.opacity.generated,
+			e.styles.transform.generated.initial,
+			e.styles.transition.generated.instant,
 		];
-		if (delayed) {
-			styles.push(element.styles.transition.generated.delayed);
-		} else {
-			styles.push(element.styles.transition.generated.instant);
-		}
-		element.revealed = element.seen = true;
-		applyStyle(
-			element.node,
-			styles
-				.filter(function (s) {
-					return s !== "";
-				})
-				.join(" ")
-		);
-		registerCallbacks.call(this, element, delayed);
+		(e.revealed = !1),
+			m(
+				e.node,
+				t
+					.filter(function (e) {
+						return "" !== e;
+					})
+					.join(" ")
+			),
+			x.call(this, e);
 	}
-
-	function triggerReset(element) {
-		var styles = [
-			element.styles.inline.generated,
-			element.styles.opacity.generated,
-			element.styles.transform.generated.initial,
-			element.styles.transition.generated.instant,
-		];
-		element.revealed = false;
-		applyStyle(
-			element.node,
-			styles
-				.filter(function (s) {
-					return s !== "";
-				})
-				.join(" ")
-		);
-		registerCallbacks.call(this, element);
-	}
-
-	function registerCallbacks(element, isDelayed) {
-		var this$1 = this;
-
-		var duration = isDelayed
-			? element.config.duration + element.config.delay
-			: element.config.duration;
-
-		var beforeCallback = element.revealed
-			? element.config.beforeReveal
-			: element.config.beforeReset;
-
-		var afterCallback = element.revealed
-			? element.config.afterReveal
-			: element.config.afterReset;
-
-		var elapsed = 0;
-		if (element.callbackTimer) {
-			elapsed = Date.now() - element.callbackTimer.start;
-			window.clearTimeout(element.callbackTimer.clock);
-		}
-
-		beforeCallback(element.node);
-
-		element.callbackTimer = {
-			start: Date.now(),
-			clock: window.setTimeout(function () {
-				afterCallback(element.node);
-				element.callbackTimer = null;
-				if (
-					element.revealed &&
-					!element.config.reset &&
-					element.config.cleanup
-				) {
-					clean.call(this$1, element.node);
-				}
-			}, duration - elapsed),
-		};
-	}
-
-	function sequence(element, pristine) {
-		if (pristine === void 0) pristine = this.pristine;
-
-		if (!element.visible && element.revealed && element.config.reset) {
-			return animate.call(this, element, { reset: true });
-		}
-
-		var seq = this.store.sequences[element.sequence.id];
-		var i = element.sequence.index;
-
-		if (seq) {
-			var visible = new SequenceModel(seq, "visible", this.store);
-			var revealed = new SequenceModel(seq, "revealed", this.store);
-
-			seq.models = { visible: visible, revealed: revealed };
-
-			if (!revealed.body.length) {
-				var nextId = seq.members[visible.body[0]];
-				var nextElement = this.store.elements[nextId];
-
-				if (nextElement) {
-					cue.call(this, seq, visible.body[0], -1, pristine);
-					cue.call(this, seq, visible.body[0], +1, pristine);
-					return animate.call(this, nextElement, {
-						reveal: true,
-						pristine: pristine,
-					});
-				}
-			}
-
-			if (
-				!seq.blocked.head &&
-				i === [].concat(revealed.head).pop() &&
-				i >= [].concat(visible.body).shift()
-			) {
-				cue.call(this, seq, i, -1, pristine);
-				return animate.call(this, element, {
-					reveal: true,
-					pristine: pristine,
-				});
-			}
-
-			if (
-				!seq.blocked.foot &&
-				i === [].concat(revealed.foot).shift() &&
-				i <= [].concat(visible.body).pop()
-			) {
-				cue.call(this, seq, i, +1, pristine);
-				return animate.call(this, element, {
-					reveal: true,
-					pristine: pristine,
-				});
-			}
-		}
-	}
-
-	function Sequence(interval) {
-		var i = Math.abs(interval);
-		if (!isNaN(i)) {
-			this.id = nextUniqueId();
-			this.interval = Math.max(i, 16);
-			this.members = [];
-			this.models = {};
-			this.blocked = {
-				head: false,
-				foot: false,
-			};
-		} else {
-			throw new RangeError("Invalid sequence interval.");
-		}
-	}
-
-	function SequenceModel(seq, prop, store) {
-		var this$1 = this;
-
-		this.head = [];
-		this.body = [];
-		this.foot = [];
-
-		each(seq.members, function (id, index) {
-			var element = store.elements[id];
-			if (element && element[prop]) {
-				this$1.body.push(index);
-			}
-		});
-
-		if (this.body.length) {
-			each(seq.members, function (id, index) {
-				var element = store.elements[id];
-				if (element && !element[prop]) {
-					if (index < this$1.body[0]) {
-						this$1.head.push(index);
-					} else {
-						this$1.foot.push(index);
-					}
-				}
+	function x(e, t) {
+		var n = this,
+			i = t ? e.config.duration + e.config.delay : e.config.duration,
+			r = e.revealed ? e.config.beforeReveal : e.config.beforeReset,
+			o = e.revealed ? e.config.afterReveal : e.config.afterReset,
+			a = 0;
+		e.callbackTimer &&
+			((a = Date.now() - e.callbackTimer.start),
+			window.clearTimeout(e.callbackTimer.clock)),
+			r(e.node),
+			(e.callbackTimer = {
+				start: Date.now(),
+				clock: window.setTimeout(function () {
+					o(e.node),
+						(e.callbackTimer = null),
+						e.revealed &&
+							!e.config.reset &&
+							e.config.cleanup &&
+							clean.call(n, e.node);
+				}, i - a),
 			});
-		}
 	}
-
-	function cue(seq, i, direction, pristine) {
-		var this$1 = this;
-
-		var blocked = ["head", null, "foot"][1 + direction];
-		var nextId = seq.members[i + direction];
-		var nextElement = this.store.elements[nextId];
-
-		seq.blocked[blocked] = true;
-
-		setTimeout(function () {
-			seq.blocked[blocked] = false;
-			if (nextElement) {
-				sequence.call(this$1, nextElement, pristine);
-			}
-		}, seq.interval);
-	}
-
-	function reveal(target, options, syncing) {
-		var this$1 = this;
-		if (options === void 0) options = {};
-		if (syncing === void 0) syncing = false;
-
-		var containerBuffer = [];
-		var sequence$$1;
-		var interval = options.interval || defaults.interval;
-
-		try {
-			if (interval) {
-				sequence$$1 = new Sequence(interval);
-			}
-
-			var nodes = tealight(target);
-			if (!nodes.length) {
-				throw new Error("Invalid reveal target.");
-			}
-
-			var elements = nodes.reduce(function (elementBuffer, elementNode) {
-				var element = {};
-				var existingId = elementNode.getAttribute("data-sr-id");
-
-				if (existingId) {
-					deepAssign(element, this$1.store.elements[existingId]);
-
-					applyStyle(element.node, element.styles.inline.computed);
-				} else {
-					element.id = nextUniqueId();
-					element.node = elementNode;
-					element.seen = false;
-					element.revealed = false;
-					element.visible = false;
-				}
-
-				var config = deepAssign({}, element.config || this$1.defaults, options);
-
-				if (
-					(!config.mobile && isMobile()) ||
-					(!config.desktop && !isMobile())
-				) {
-					if (existingId) {
-						clean.call(this$1, element);
-					}
-					return elementBuffer;
-				}
-
-				var containerNode = tealight(config.container)[0];
-				if (!containerNode) {
-					throw new Error("Invalid container.");
-				}
-				if (!containerNode.contains(elementNode)) {
-					return elementBuffer;
-				}
-
-				var containerId;
-				{
-					containerId = getContainerId(
-						containerNode,
-						containerBuffer,
-						this$1.store.containers
+	function k(e, t) {
+		if (
+			(void 0 === t && (t = this.pristine),
+			!e.visible && e.revealed && e.config.reset)
+		)
+			return E.call(this, e, { reset: !0 });
+		var n = this.store.sequences[e.sequence.id],
+			i = e.sequence.index;
+		if (n) {
+			var r = new R(n, "visible", this.store),
+				o = new R(n, "revealed", this.store);
+			if (((n.models = { visible: r, revealed: o }), !o.body.length)) {
+				var a = n.members[r.body[0]],
+					s = this.store.elements[a];
+				if (s)
+					return (
+						q.call(this, n, r.body[0], -1, t),
+						q.call(this, n, r.body[0], 1, t),
+						E.call(this, s, { reveal: !0, pristine: t })
 					);
-					if (containerId === null) {
-						containerId = nextUniqueId();
-						containerBuffer.push({ id: containerId, node: containerNode });
-					}
-				}
-
-				element.config = config;
-				element.containerId = containerId;
-				element.styles = style(element);
-
-				if (sequence$$1) {
-					element.sequence = {
-						id: sequence$$1.id,
-						index: sequence$$1.members.length,
-					};
-					sequence$$1.members.push(element.id);
-				}
-
-				elementBuffer.push(element);
-				return elementBuffer;
+			}
+			if (
+				!n.blocked.head &&
+				i === [].concat(o.head).pop() &&
+				i >= [].concat(r.body).shift()
+			)
+				return (
+					q.call(this, n, i, -1, t),
+					E.call(this, e, { reveal: !0, pristine: t })
+				);
+			if (
+				!n.blocked.foot &&
+				i === [].concat(o.foot).shift() &&
+				i <= [].concat(r.body).pop()
+			)
+				return (
+					q.call(this, n, i, 1, t), E.call(this, e, { reveal: !0, pristine: t })
+				);
+		}
+	}
+	function O(e) {
+		var t = Math.abs(e);
+		if (isNaN(t)) throw new RangeError("Invalid sequence interval.");
+		(this.id = b()),
+			(this.interval = Math.max(t, 16)),
+			(this.members = []),
+			(this.models = {}),
+			(this.blocked = { head: !1, foot: !1 });
+	}
+	function R(e, t, n) {
+		var i = this;
+		(this.head = []),
+			(this.body = []),
+			(this.foot = []),
+			o(e.members, function (e, r) {
+				var o = n.elements[e];
+				o && o[t] && i.body.push(r);
+			}),
+			this.body.length &&
+				o(e.members, function (e, r) {
+					var o = n.elements[e];
+					o && !o[t] && (r < i.body[0] ? i.head.push(r) : i.foot.push(r));
+				});
+	}
+	function q(e, t, n, i) {
+		var r = this,
+			o = ["head", null, "foot"][1 + n],
+			a = e.members[t + n],
+			s = this.store.elements[a];
+		(e.blocked[o] = !0),
+			setTimeout(function () {
+				(e.blocked[o] = !1), s && k.call(r, s, i);
+			}, e.interval);
+	}
+	function M(t, n, r) {
+		var s = this;
+		void 0 === n && (n = {}), void 0 === r && (r = !1);
+		var c,
+			l = [],
+			u = n.interval || e.interval;
+		try {
+			u && (c = new O(u));
+			var d = i(t);
+			if (!d.length) throw new Error("Invalid reveal target.");
+			var f = d.reduce(function (e, t) {
+				var r = {},
+					a = t.getAttribute("data-sr-id");
+				a
+					? (v(r, s.store.elements[a]), m(r.node, r.styles.inline.computed))
+					: ((r.id = b()),
+					  (r.node = t),
+					  (r.seen = !1),
+					  (r.revealed = !1),
+					  (r.visible = !1));
+				var u = v({}, r.config || s.defaults, n);
+				if ((!u.mobile && y()) || (!u.desktop && !y()))
+					return a && clean.call(s, r), e;
+				var d,
+					f = i(u.container)[0];
+				if (!f) throw new Error("Invalid container.");
+				return f.contains(t)
+					? ((d = (function (e) {
+							var t = [],
+								n = arguments.length - 1;
+							for (; n-- > 0; ) t[n] = arguments[n + 1];
+							var i = null;
+							return (
+								o(t, function (t) {
+									o(t, function (t) {
+										null === i && t.node === e && (i = t.id);
+									});
+								}),
+								i
+							);
+					  })(f, l, s.store.containers)),
+					  null === d && ((d = b()), l.push({ id: d, node: f })),
+					  (r.config = u),
+					  (r.containerId = d),
+					  (r.styles = p(r)),
+					  c &&
+							((r.sequence = { id: c.id, index: c.members.length }),
+							c.members.push(r.id)),
+					  e.push(r),
+					  e)
+					: e;
 			}, []);
-
-			each(elements, function (element) {
-				this$1.store.elements[element.id] = element;
-				element.node.setAttribute("data-sr-id", element.id);
+			o(f, function (e) {
+				(s.store.elements[e.id] = e), e.node.setAttribute("data-sr-id", e.id);
 			});
 		} catch (e) {
-			return logger.call(this, "Reveal failed.", e.message);
+			return a.call(this, "Reveal failed.", e.message);
 		}
-
-		each(containerBuffer, function (container) {
-			this$1.store.containers[container.id] = {
-				id: container.id,
-				node: container.node,
-			};
-		});
-		if (sequence$$1) {
-			this.store.sequences[sequence$$1.id] = sequence$$1;
-		}
-
-		if (syncing !== true) {
-			this.store.history.push({ target: target, options: options });
-
-			if (this.initTimeout) {
-				window.clearTimeout(this.initTimeout);
-			}
-			this.initTimeout = window.setTimeout(initialize.bind(this), 0);
-		}
+		o(l, function (e) {
+			s.store.containers[e.id] = { id: e.id, node: e.node };
+		}),
+			c && (this.store.sequences[c.id] = c),
+			!0 !== r &&
+				(this.store.history.push({ target: t, options: n }),
+				this.initTimeout && window.clearTimeout(this.initTimeout),
+				(this.initTimeout = window.setTimeout(w.bind(this), 0)));
 	}
-
-	function getContainerId(node) {
-		var collections = [],
-			len = arguments.length - 1;
-		while (len-- > 0) collections[len] = arguments[len + 1];
-
-		var id = null;
-		each(collections, function (collection) {
-			each(collection, function (container) {
-				if (id === null && container.node === node) {
-					id = container.id;
-				}
-			});
-		});
-		return id;
-	}
-
-	var polyfill = function (x) {
-		return (x > 0) - (x < 0) || +x;
-	};
-	var mathSign = Math.sign || polyfill;
-
-	var polyfill$1 = (function () {
-		var clock = Date.now();
-
-		return function (callback) {
-			var currentTime = Date.now();
-			if (currentTime - clock > 16) {
-				clock = currentTime;
-				callback(currentTime);
-			} else {
-				setTimeout(function () {
-					return polyfill$1(callback);
-				}, 0);
-			}
-		};
-	})();
-
-	var miniraf =
-		window.requestAnimationFrame ||
-		window.webkitRequestAnimationFrame ||
-		window.mozRequestAnimationFrame ||
-		polyfill$1;
-
-	function getGeometry(target, isContainer) {
-		var height = isContainer
-			? target.node.clientHeight
-			: target.node.offsetHeight;
-		var width = isContainer ? target.node.clientWidth : target.node.offsetWidth;
-
-		var offsetTop = 0;
-		var offsetLeft = 0;
-		var node = target.node;
-
-		do {
-			if (!isNaN(node.offsetTop)) {
-				offsetTop += node.offsetTop;
-			}
-			if (!isNaN(node.offsetLeft)) {
-				offsetLeft += node.offsetLeft;
-			}
-			node = node.offsetParent;
-		} while (node);
-
-		return {
-			bounds: {
-				top: offsetTop,
-				right: offsetLeft + width,
-				bottom: offsetTop + height,
-				left: offsetLeft,
+	var A,
+		I,
+		L,
+		N,
+		P,
+		F,
+		z =
+			Math.sign ||
+			function (e) {
+				return (e > 0) - (e < 0) || +e;
 			},
-			height: height,
-			width: width,
+		D =
+			((A = Date.now()),
+			function (e) {
+				var t = Date.now();
+				t - A > 16
+					? ((A = t), e(t))
+					: setTimeout(function () {
+							return D(e);
+					  }, 0);
+			}),
+		S =
+			window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			D;
+	function C(e, t) {
+		var n = t ? e.node.clientHeight : e.node.offsetHeight,
+			i = t ? e.node.clientWidth : e.node.offsetWidth,
+			r = 0,
+			o = 0,
+			a = e.node;
+		do {
+			isNaN(a.offsetTop) || (r += a.offsetTop),
+				isNaN(a.offsetLeft) || (o += a.offsetLeft),
+				(a = a.offsetParent);
+		} while (a);
+		return {
+			bounds: { top: r, right: o + i, bottom: r + n, left: o },
+			height: n,
+			width: i,
 		};
 	}
-
-	function getScrolled(container) {
-		var top, left;
-		if (container.node === document.documentElement) {
-			top = window.pageYOffset;
-			left = window.pageXOffset;
-		} else {
-			top = container.node.scrollTop;
-			left = container.node.scrollLeft;
-		}
-		return { top: top, left: left };
-	}
-
-	function isElementVisible(element) {
-		if (element === void 0) element = {};
-
-		var container = this.store.containers[element.containerId];
-		if (!container) {
-			return;
-		}
-
-		var viewFactor = Math.max(0, Math.min(1, element.config.viewFactor));
-		var viewOffset = element.config.viewOffset;
-
-		var elementBounds = {
-			top: element.geometry.bounds.top + element.geometry.height * viewFactor,
-			right:
-				element.geometry.bounds.right - element.geometry.width * viewFactor,
-			bottom:
-				element.geometry.bounds.bottom - element.geometry.height * viewFactor,
-			left: element.geometry.bounds.left + element.geometry.width * viewFactor,
-		};
-
-		var containerBounds = {
-			top:
-				container.geometry.bounds.top + container.scroll.top + viewOffset.top,
-			right:
-				container.geometry.bounds.right +
-				container.scroll.left -
-				viewOffset.right,
-			bottom:
-				container.geometry.bounds.bottom +
-				container.scroll.top -
-				viewOffset.bottom,
-			left:
-				container.geometry.bounds.left +
-				container.scroll.left +
-				viewOffset.left,
-		};
-
+	function W(e) {
+		var t, n;
 		return (
-			(elementBounds.top < containerBounds.bottom &&
-				elementBounds.right > containerBounds.left &&
-				elementBounds.bottom > containerBounds.top &&
-				elementBounds.left < containerBounds.right) ||
-			element.styles.position === "fixed"
+			e.node === document.documentElement
+				? ((t = window.pageYOffset), (n = window.pageXOffset))
+				: ((t = e.node.scrollTop), (n = e.node.scrollLeft)),
+			{ top: t, left: n }
 		);
 	}
-
-	function delegate(event, elements) {
-		var this$1 = this;
-		if (event === void 0) event = { type: "init" };
-		if (elements === void 0) elements = this.store.elements;
-
-		miniraf(function () {
-			var stale = event.type === "init" || event.type === "resize";
-
-			each(this$1.store.containers, function (container) {
-				if (stale) {
-					container.geometry = getGeometry.call(this$1, container, true);
-				}
-				var scroll = getScrolled.call(this$1, container);
-				if (container.scroll) {
-					container.direction = {
-						x: mathSign(scroll.left - container.scroll.left),
-						y: mathSign(scroll.top - container.scroll.top),
-					};
-				}
-				container.scroll = scroll;
-			});
-
-			each(elements, function (element) {
-				if (stale || element.geometry === undefined) {
-					element.geometry = getGeometry.call(this$1, element);
-				}
-				element.visible = isElementVisible.call(this$1, element);
-			});
-
-			each(elements, function (element) {
-				if (element.sequence) {
-					sequence.call(this$1, element);
-				} else {
-					animate.call(this$1, element);
-				}
-			});
-
-			this$1.pristine = false;
-		});
-	}
-
-	function isTransformSupported() {
-		var style = document.documentElement.style;
-		return "transform" in style || "WebkitTransform" in style;
-	}
-
-	function isTransitionSupported() {
-		var style = document.documentElement.style;
-		return "transition" in style || "WebkitTransition" in style;
-	}
-
-	var boundDelegate;
-	var boundDestroy;
-	var boundReveal;
-	var boundClean;
-	var boundSync;
-	var config;
-	var debug;
-	var instance;
-
-	function ScrollReveal(options) {
-		if (options === void 0) options = {};
-
-		var invokedWithoutNew =
-			typeof this === "undefined" ||
-			Object.getPrototypeOf(this) !== ScrollReveal.prototype;
-
-		if (invokedWithoutNew) {
-			return new ScrollReveal(options);
-		}
-
-		if (!ScrollReveal.isSupported()) {
-			logger.call(
-				this,
-				"Instantiation failed.",
-				"This browser is not supported."
+	function Y(e) {
+		void 0 === e && (e = {});
+		var t = this.store.containers[e.containerId];
+		if (t) {
+			var n = Math.max(0, Math.min(1, e.config.viewFactor)),
+				i = e.config.viewOffset,
+				r = e.geometry.bounds.top + e.geometry.height * n,
+				o = e.geometry.bounds.right - e.geometry.width * n,
+				a = e.geometry.bounds.bottom - e.geometry.height * n,
+				s = e.geometry.bounds.left + e.geometry.width * n,
+				c = t.geometry.bounds.top + t.scroll.top + i.top,
+				l = t.geometry.bounds.right + t.scroll.left - i.right,
+				u = t.geometry.bounds.bottom + t.scroll.top - i.bottom,
+				d = t.geometry.bounds.left + t.scroll.left + i.left;
+			return (
+				(r < u && o > d && a > c && s < l) || "fixed" === e.styles.position
 			);
-			return mount.failure();
 		}
-
-		var buffer;
-		try {
-			buffer = config
-				? deepAssign({}, config, options)
-				: deepAssign({}, defaults, options);
-		} catch (e) {
-			logger.call(this, "Invalid configuration.", e.message);
-			return mount.failure();
-		}
-
-		try {
-			var container = tealight(buffer.container)[0];
-			if (!container) {
-				throw new Error("Invalid container.");
-			}
-		} catch (e) {
-			logger.call(this, e.message);
-			return mount.failure();
-		}
-
-		config = buffer;
-
-		if ((!config.mobile && isMobile()) || (!config.desktop && !isMobile())) {
-			logger.call(
-				this,
-				"This device is disabled.",
-				"desktop: " + config.desktop,
-				"mobile: " + config.mobile
-			);
-			return mount.failure();
-		}
-
-		mount.success();
-
-		this.store = {
-			containers: {},
-			elements: {},
-			history: [],
-			sequences: {},
-		};
-
-		this.pristine = true;
-
-		boundDelegate = boundDelegate || delegate.bind(this);
-
-		boundReveal = boundReveal || reveal.bind(this);
-
-		Object.defineProperty(this, "delegate", {
-			get: function () {
-				return boundDelegate;
-			},
-		});
-
-		Object.defineProperty(this, "reveal", {
-			get: function () {
-				return boundReveal;
-			},
-		});
-
-		Object.defineProperty(this, "defaults", {
-			get: function () {
-				return config;
-			},
-		});
-
-		return instance ? instance : (instance = this);
 	}
-
-	ScrollReveal.isSupported = function () {
-		return isTransformSupported() && isTransitionSupported();
-	};
-
-	Object.defineProperty(ScrollReveal, "debug", {
-		get: function () {
-			return debug || false;
-		},
-		set: function (value) {
-			return (debug = typeof value === "boolean" ? value : debug);
-		},
-	});
-
-	ScrollReveal();
-
-	return ScrollReveal;
+	function $(e, t) {
+		var n = this;
+		void 0 === e && (e = { type: "init" }),
+			void 0 === t && (t = this.store.elements),
+			S(function () {
+				var i = "init" === e.type || "resize" === e.type;
+				o(n.store.containers, function (e) {
+					i && (e.geometry = C.call(n, e, !0));
+					var t = W.call(n, e);
+					e.scroll &&
+						(e.direction = {
+							x: z(t.left - e.scroll.left),
+							y: z(t.top - e.scroll.top),
+						}),
+						(e.scroll = t);
+				}),
+					o(t, function (e) {
+						(i || void 0 === e.geometry) && (e.geometry = C.call(n, e)),
+							(e.visible = Y.call(n, e));
+					}),
+					o(t, function (e) {
+						e.sequence ? k.call(n, e) : E.call(n, e);
+					}),
+					(n.pristine = !1);
+			});
+	}
+	function H(n) {
+		var r;
+		if (
+			(void 0 === n && (n = {}),
+			void 0 === this || Object.getPrototypeOf(this) !== H.prototype)
+		)
+			return new H(n);
+		if (!H.isSupported())
+			return (
+				a.call(this, "Instantiation failed.", "This browser is not supported."),
+				t.failure()
+			);
+		try {
+			r = v({}, N || e, n);
+		} catch (e) {
+			return a.call(this, "Invalid configuration.", e.message), t.failure();
+		}
+		try {
+			if (!i(r.container)[0]) throw new Error("Invalid container.");
+		} catch (e) {
+			return a.call(this, e.message), t.failure();
+		}
+		return (!(N = r).mobile && y()) || (!N.desktop && !y())
+			? (a.call(
+					this,
+					"This device is disabled.",
+					"desktop: " + N.desktop,
+					"mobile: " + N.mobile
+			  ),
+			  t.failure())
+			: (t.success(),
+			  (this.store = {
+					containers: {},
+					elements: {},
+					history: [],
+					sequences: {},
+			  }),
+			  (this.pristine = !0),
+			  (I = I || $.bind(this)),
+			  (L = L || M.bind(this)),
+			  Object.defineProperty(this, "delegate", {
+					get: function () {
+						return I;
+					},
+			  }),
+			  Object.defineProperty(this, "reveal", {
+					get: function () {
+						return L;
+					},
+			  }),
+			  Object.defineProperty(this, "defaults", {
+					get: function () {
+						return N;
+					},
+			  }),
+			  F || (F = this));
+	}
+	return (
+		(H.isSupported = function () {
+			return (
+				(function () {
+					var e = document.documentElement.style;
+					return "transform" in e || "WebkitTransform" in e;
+				})() &&
+				(function () {
+					var e = document.documentElement.style;
+					return "transition" in e || "WebkitTransition" in e;
+				})()
+			);
+		}),
+		Object.defineProperty(H, "debug", {
+			get: function () {
+				return P || !1;
+			},
+			set: function (e) {
+				return (P = "boolean" == typeof e ? e : P);
+			},
+		}),
+		H(),
+		H
+	);
 });

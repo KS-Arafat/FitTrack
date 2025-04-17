@@ -7,5 +7,4 @@ function sanitize_input($data)
     return $data;
 }
 
-
 ?>

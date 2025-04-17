@@ -4,9 +4,8 @@
 
 <body>
 	<?php include "components/navbar.php" ?>
-
-	<script src="scrollreveal.js"></script>
-	<script src="main.js"></script>
+	<script src="scrollreveal.min.js"></script>
+	<script src="main.min.js"></script>
 </body>
 
-</html>
+</html><?php ob_end_flush(); ?>

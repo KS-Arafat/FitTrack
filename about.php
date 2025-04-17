@@ -1,6 +1,6 @@
+<?php require_once "minify.php"; ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <?php include "components/header.php" ?>
 
 <body>
@@ -24,7 +24,6 @@
 					quisquam?
 				</p>
 			</div>
-
 			<div class="about__card">
 				<h4>About Us 02</h4>
 				<p>
@@ -54,9 +53,9 @@
 			</div>
 		</div>
 	</section>
-
-	<script src="scrollreveal.js"></script>
-	<script src="main.js"></script>
+	<script src="scrollreveal.min.js"></script>
+	<script src="main.min.js"></script>
 </body>
 
 </html>
+<?php ob_end_flush(); ?>

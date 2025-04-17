@@ -1,6 +1,7 @@
+<?php require_once "minify.php"; ?>
+
 <!DOCTYPE html>
 <html lang="en">
-
 <?php include "components/header.php" ?>
 
 <body>
@@ -20,15 +21,14 @@
 			</div>
 		</div>
 	</header>
-
 	<footer class="footer" id="contact">
 		<div class="footer__bar">
 			Copyright © 2025 Junior Devs. All rights reserved.
 		</div>
 	</footer>
-
-	<script src="./scrollreveal.js"></script>
-	<script src="main.js"></script>
+	<script src="./scrollreveal.min.js"></script>
+	<script src="main.min.js"></script>
 </body>
 
 </html>
+<?php ob_end_flush(); ?>
